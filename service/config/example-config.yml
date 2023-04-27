@@ -1,0 +1,16 @@
+SERVICE:
+  name: Название проекта
+  secret_key: test_key
+  incoming_data_raw: 1
+  ip_cam: 0
+  host: 0.0.0.0
+  port: 5678
+  debug: 1
+  debug_temp_path: ./logs/temp/
+CROPPING_COMPONENT:
+  filling: 30
+  cascade: ./config/cv2/lbpcascades/lbpcascade_frontalface_improved.xml
+LANGUAGE:
+  only_one_face: Идентификация проходит только по очереди
+  come_closer: Подойдите ближе
+  no_data: Нет данных
