@@ -1,16 +1,25 @@
 SERVICE:
   name: Название проекта
   secret_key: test_key
-  incoming_data_raw: 1
+  incoming_data: 1 # 1 = raw, 2 = numpy.ndarray, 3 = base64
   ip_cam: 0
   host: 0.0.0.0
   port: 5678
   debug: 1
   debug_temp_path: ./logs/temp/
 CROPPING_COMPONENT:
-  filling: 30
-  cascade: ./config/cv2/lbpcascades/lbpcascade_frontalface_improved.xml
+  filling: 40
+  cascade: ./config/cv2/haarcascades/haarcascade_frontalface_alt2.xml
+RECOGNITION_COMPONENT:
+  persons_path: ./persons
+  blocked_persons: blocked # Название папки в ./persons, для заблокированных сотрудников
+  tolerance: 0.5
 LANGUAGE:
   only_one_face: Идентификация проходит только по очереди
   come_closer: Подойдите ближе
   no_data: Нет данных
+  unknown_data_format: Неизвестный формат данных
+  recognition_success: Проходите
+  unknown_person: Не могу вас определить. Подойдите ближе или дальше.
+  confirmed_person: Личность подтверждена.
+  access_denied: Доступ запрещен.
