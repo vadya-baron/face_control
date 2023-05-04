@@ -86,6 +86,9 @@ class Recognition(Interface):
             if matches_sum == 0:
                 continue
 
+            if personId == self._blocked_persons and matches_sum >= 1:
+                return -1, ['access_denied']
+
             tolerance = matches_sum / len(matches)
             if tolerance >= self._tolerance:
                 if personId == self._blocked_persons:
