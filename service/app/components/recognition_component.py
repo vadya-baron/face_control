@@ -3,7 +3,6 @@ import os
 import face_recognition
 import numpy as np
 import logging
-import cv2
 from app.components.common.abstract_recognition import Interface
 
 
@@ -52,7 +51,6 @@ class Recognition(Interface):
         else:
             raise Exception('Не передан параметр persons_path')
 
-        # print(self._persons)
         if not (len(self._persons) > 0):
             raise Exception(f"Папка {persons_path} пуста")
 
@@ -73,9 +71,8 @@ class Recognition(Interface):
         if len(image) == 0:
             return 0, []
 
-        small = cv2.resize(image, (0, 0), fx=1, fy=1)
-        encodings = face_recognition.face_encodings(small)
-        if len(encodings) != 1:
+        encodings = face_recognition.face_encodings(image)
+        if len(encodings) > 1:
             return 0, ['only_one_face']
 
         encoding = encodings[0]
