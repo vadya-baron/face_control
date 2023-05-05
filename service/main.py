@@ -10,11 +10,13 @@ import app.components.recognition_component as rec_com
 
 # Controllers
 import app.controllers.detect_controller as detect_con
+import app.controllers.cropping_controller as crop_con
 
 listener_app = Flask(__name__)
 listener_app.config['JSON_AS_ASCII'] = False
 CORS(listener_app)
 detect_controller = detect_con.DetectController()
+cropping_controller = crop_con.CroppingController()
 cropping_component = crop_com.Cropping()
 recognition_component = rec_com.Recognition()
 
@@ -41,6 +43,7 @@ def start_service():
         cropping_component.init(config['CROPPING_COMPONENT'], debug)
         recognition_component.init(config['RECOGNITION_COMPONENT'], debug)
         detect_controller.init(config)
+        cropping_controller.init(config)
         if not bool(config['SERVICE']['ip_cam']):
             listener(config)
         else:
@@ -93,6 +96,21 @@ def listener(config):
 
         result['messages'] = translate(messages, config['LANGUAGE'])
         result['employee_id'] = employee_id
+
+        return json_response(result)
+
+
+    @listener_app.post('/crop')
+    def crop():
+        result = {}
+        if incoming_data == 1:  # Получение файла
+            id, messages = cropping_controller.raw_crop(request, cropping_component)
+        else:
+            id = 0
+            messages = ['unknown_data_format']
+
+        result['messages'] = translate(messages, config['LANGUAGE'])
+        result['id'] = id
 
         return json_response(result)
 

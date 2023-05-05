@@ -7,9 +7,14 @@ SERVICE:
   port: 5678
   debug: 1
   debug_temp_path: ./logs/temp/
+  dataset_path: ./dataset/ # Папка, куда сохраняется результат работы cropping_controller контроллера
+  crop_size_width: 120
+  crop_size_height: # Если пусто, будет найдено пропорциональное значение.
 CROPPING_COMPONENT:
   filling: 40
-  cascade: ./config/cv2/haarcascades/haarcascade_frontalface_alt2.xml
+  cascade: ./config/cv2/lbpcascades/lbpcascade_frontalface.xml
+  crop_size_width: 120
+  crop_size_height: # Если пусто, будет найдено пропорциональное значение.
 RECOGNITION_COMPONENT:
   persons_path: ./persons
   blocked_persons: blocked # Название папки в ./persons, для заблокированных сотрудников
