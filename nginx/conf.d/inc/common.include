@@ -1,0 +1,44 @@
+access_log  /var/log/nginx/access.log upstream_time;
+
+
+
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $remote_addr;
+proxy_set_header            X-Forwarded-Proto $scheme;
+proxy_connect_timeout 120;
+proxy_send_timeout 120;
+proxy_read_timeout 180;
+
+
+if ($request_method = HEAD ) {
+    return 403;
+}
+
+
+location ~ \.(jpg|jpeg|gif|png|ico|css|zip|tgz|gz|rar|bz2|doc|xls|exe|pdf|ppt|tar|mid|midi|wav|bmp|rtf|js)$ {
+    root /var/www/html/hosts/$host;
+}
+
+location ~ /\.ht {
+    deny  all;
+}
+
+location / {
+    proxy_pass http://apache_php8;
+}
+
+
+location = /favicon.ico {
+    proxy_pass http://apache_php8;
+}
+
+location = /sitemap.xml {
+    proxy_pass http://apache_php8;
+}
+
+location = /robots.txt {
+    proxy_pass http://apache_php8;
+}
+
+include conf.d/inc/letsencrypt.include;
