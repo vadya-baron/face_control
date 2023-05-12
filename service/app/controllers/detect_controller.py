@@ -1,12 +1,10 @@
 import logging
 import numpy as np
 import cv2
-import time
-import datetime
 from app.components.cropping_component import Cropping
 from app.components.recognition_component import Recognition
 from app.components.repositories.db_repository_mysql import DBRepository
-
+from app.controllers.common_controller import record_employee, recognize
 
 # print("---stream---\r\n", request.stream.read())
 # print("---data---\r\n", request.data)
@@ -19,7 +17,10 @@ from app.components.repositories.db_repository_mysql import DBRepository
 class DetectController:
     """
     Контроллер по поиску лица
-    raw_direct:
+        init:
+        raw_direct:
+        direct:
+        direct_base64:
     """
 
     _service: dict
@@ -57,8 +58,21 @@ class DetectController:
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 # image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-                employee_id, messages = self.__recognition(image)
-                record_messages = self.__record_employee(employee_id)
+                employee_id, messages = recognize(
+                    image,
+                    self.recognition_component,
+                    self.cropping_component,
+                    True,
+                    bool(self._service['debug']),
+                    self._service['debug_temp_path'] + 'detect_controller_raw_direct_result.jpg'
+                )
+
+                record_messages = record_employee(
+                    self.temp_dict_of_employees,
+                    self._min_time_between_rec,
+                    self.db_repository,
+                    employee_id
+                )
                 messages += record_messages
 
                 return employee_id, messages
@@ -73,8 +87,21 @@ class DetectController:
             input_json = request.get_json(force=True)
             data = input_json['data']
 
-            employee_id, messages = self.__recognition(np.ndarray(data))
-            record_messages = self.__record_employee(employee_id)
+            employee_id, messages = recognize(
+                np.ndarray(data),
+                self.recognition_component,
+                self.cropping_component,
+                True,
+                bool(self._service['debug']),
+                self._service['debug_temp_path'] + 'detect_controller_direct_result.jpg'
+            )
+
+            record_messages = record_employee(
+                self.temp_dict_of_employees,
+                self._min_time_between_rec,
+                self.db_repository,
+                employee_id
+            )
             messages += record_messages
 
             return employee_id, messages
@@ -90,65 +117,24 @@ class DetectController:
 
             # image = cv2.imdecode(image, cv2.IMREAD_COLOR)
 
-            employee_id, messages = self.__recognition(np.ndarray([]))
-            record_messages = self.__record_employee(employee_id)
+            employee_id, messages = recognize(
+                np.ndarray(np.ndarray([])),
+                self.recognition_component,
+                self.cropping_component,
+                True,
+                bool(self._service['debug']),
+                self._service['debug_temp_path'] + 'detect_controller_direct_base64_result.jpg'
+            )
+
+            record_messages = record_employee(
+                self.temp_dict_of_employees,
+                self._min_time_between_rec,
+                self.db_repository,
+                employee_id
+            )
             messages += record_messages
 
             return employee_id, messages
         except Exception as e:
             logging.error(e)
             return 0, [str(e)]
-
-    def __recognition(
-            self,
-            data: np.ndarray
-    ) -> (int, list):
-        employee_id: int = 0
-
-        if len(data) > 0:
-            crop_data, messages = self.cropping_component.cropping(data)
-
-            if len(crop_data) == 0:
-                return employee_id, messages + ['no_data']
-
-            if bool(self._service['debug']):
-                cv2.imwrite(self._service['debug_temp_path'] + 'result.jpg', crop_data)
-
-            employee_id, recognition_messages = self.recognition_component.recognition(crop_data)
-
-            messages += recognition_messages
-
-            return employee_id, messages
-
-        return employee_id, ['no_data']
-
-    def __record_employee(self, employee_id) -> list:
-        if employee_id <= 0:
-            return []
-
-        test_time = int(time.time())
-        new_employee = False
-
-        if self.temp_dict_of_employees.get(employee_id) is None:
-            self.temp_dict_of_employees[employee_id] = {'last_time_rec': test_time + self._min_time_between_rec}
-            new_employee = True
-
-        if new_employee is False and int(self.temp_dict_of_employees[employee_id]['last_time_rec']) > test_time:
-            return []
-
-        try:
-            last_visit = self.db_repository.get_last_visit(employee_id, {
-                'date_from': '{date:%Y-%m-%d 00:00:00}'.format(date=datetime.datetime.now())
-            })
-
-            if last_visit.get('direction', 1) == 1:
-                direction = 0
-            else:
-                direction = 1
-
-            self.db_repository.add_visit(employee_id, direction)
-            self.temp_dict_of_employees[employee_id]['last_time_rec'] = test_time + self._min_time_between_rec
-        except Exception as e:
-            return [str(e)]
-
-        return []
