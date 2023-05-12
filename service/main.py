@@ -6,22 +6,33 @@ from waitress import serve
 import pymysql
 import pymysql.cursors
 
-# Components
+# import Components
 import app.components.cropping_component as crop_com
 import app.components.recognition_component as rec_com
 import app.components.repositories.db_repository_mysql as db_rep
 
-# Controllers
+# import Controllers
 import app.controllers.detect_controller as detect_con
 import app.controllers.cropping_controller as crop_con
+import app.controllers.recognition_controller as recog_con
+import app.controllers.statistic_controller as stat_con
 
+# listener
 listener_app = Flask(__name__)
 listener_app.config['JSON_AS_ASCII'] = False
 CORS(listener_app)
+
+# __init__ Controllers
 detect_controller = detect_con.DetectController()
 cropping_controller = crop_con.CroppingController()
+recognition_controller = recog_con.RecognitionController()
+statistic_controller = stat_con.StatisticController()
+
+# __init__ Components
 cropping_component = crop_com.Cropping()
 recognition_component = rec_com.Recognition()
+
+# __init__ Repositories
 db_repository = db_rep.DBRepository()
 
 
@@ -45,12 +56,15 @@ def start_service():
     temp_dict_of_employees = dict()
 
     try:
+        # Configure repositories
         conn = db_connect(config['DB_CONFIG'])
-
         db_repository.init(conn, config['DB_CONFIG'], debug)
+
+        # Configure components
         cropping_component.init(config['CROPPING_COMPONENT'], debug)
         recognition_component.init(config['RECOGNITION_COMPONENT'], debug)
 
+        # Configure controllers
         detect_controller.init(
             config,
             temp_dict_of_employees,
@@ -58,8 +72,10 @@ def start_service():
             recognition_component,
             db_repository
         )
-
         cropping_controller.init(config, cropping_component)
+        recognition_controller.init(config, temp_dict_of_employees, recognition_component, db_repository)
+        statistic_controller.init(config, db_repository)
+
         if not bool(config['SERVICE']['ip_cam']):
             listener(config)
         else:
@@ -146,11 +162,41 @@ def listener(config):
 
     @listener_app.post('/recognition')
     def recognition():
-        return json_response({'recognition': 'ok'})
+        result = {}
+        id, messages = recognition_controller.recognize(request)
+
+        result['messages'] = translate(messages, config['LANGUAGE'])
+        result['id'] = id
+
+        return json_response(result)
 
     @listener_app.get('/statistic')
     def statistic():
-        return json_response({'statistic': 'ok'})
+        result = {}
+
+        response_format = request.args.get('response_format', 'json')
+
+        employees_list, messages = statistic_controller.get_statistic(request, response_format)
+
+        if response_format != 'json':
+            messages.append('response_format_is_not_supported')
+
+        result['messages'] = translate(messages, config['LANGUAGE'])
+        result['list'] = employees_list
+
+
+
+        return json_response(result)
+
+    @listener_app.get('/get-employees-list')
+    def get_employees_list():
+        result = {}
+        employees_list, messages = statistic_controller.get_employees_list()
+
+        result['messages'] = translate(messages, config['LANGUAGE'])
+        result['list'] = employees_list
+
+        return json_response(result)
 
     @listener_app.errorhandler(404)
     def not_found(error):

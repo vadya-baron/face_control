@@ -8,34 +8,29 @@ from app.components.common.abstract_db_repository import Interface
 from pymysql.connections import Connection as sqlConn
 
 
-def _get_query(filters: dict):
+def _get_query(filters: dict) -> (str, str):
     if len(filters) == 0:
         return ''
 
     id = filters.get('id', None)
     employee_id = filters.get('employee_id', None)
     direction = filters.get('direction', None)
-    visit_date = filters.get('visit_date', None)
     date_from = filters.get('date_from', None)
     date_to = filters.get('date_to', None)
     employee_ids = filters.get('employee_ids', None)
     ids = filters.get('ids', None)
+    limit = filters.get('limit', None)
+    page = filters.get('page', None)
 
     query = ''
     if id:
-        id = int(id)
         query = query + " AND id = " + str(id)
 
     if employee_id:
-        employee_id = int(employee_id)
         query = query + " AND employee_id = " + str(employee_id)
 
     if direction:
-        direction = int(direction)
         query = query + " AND direction = " + str(direction)
-
-    if visit_date:
-        query = query + " AND visit_date = " + pymysql.converters.escape_str(visit_date)
 
     if date_from:
         query = query + " AND visit_date >= " + pymysql.converters.escape_str(date_from)
@@ -57,7 +52,15 @@ def _get_query(filters: dict):
         join_ids = ','.join(ids)
         query = query + " AND id IN (" + join_ids + ")"
 
-    return query
+    limit_offset = ''
+    if limit:
+        limit_offset = " LIMIT " + str(limit)
+
+    if page and limit:
+        offset = (page - 1) * limit
+        limit_offset = limit_offset + " OFFSET " + str(offset)
+
+    return query, limit_offset
 
 
 class DBRepository(Interface):
@@ -92,7 +95,7 @@ class DBRepository(Interface):
         return result
 
     def get_last_visit(self, employee_id: int, filters: dict) -> dict:
-        query = _get_query(filters)
+        query, _ = _get_query(filters)
 
         try:
             cur = self.conn.cursor()
@@ -115,7 +118,7 @@ class DBRepository(Interface):
         return {}
 
     def get_visits(self, filters: dict) -> list[dict]:
-        query = _get_query(filters)
+        query, limit_offset = _get_query(filters)
         if query != '':
             query = query[4:]
             query = 'WHERE' + query
@@ -123,7 +126,7 @@ class DBRepository(Interface):
         employees = []
         try:
             cur = self.conn.cursor()
-            cur.execute("SELECT * FROM `employee_visits` " + query + " ORDER BY `visit_date` DESC")
+            cur.execute("SELECT * FROM `employee_visits` " + query + " ORDER BY `visit_date` DESC" + limit_offset)
             employees = cur.fetchall()
 
             if len(employees) == 0:
