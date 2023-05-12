@@ -1,0 +1,12 @@
+
+if ($ssl_protocol = "") {
+  set $ssl_flag "SSL";
+}
+
+if ( $host ~* "^([^.]*\.)?[^.]+\.[^.]+$" ) {
+  set $ssl_flag "${ssl_flag}HOST";
+}
+
+if ( $ssl_flag = "SSLHOST") {
+  return 301 https://$host$request_uri;
+}

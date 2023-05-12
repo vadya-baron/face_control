@@ -3,10 +3,13 @@ import logging
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
 from waitress import serve
+import pymysql
+import pymysql.cursors
 
 # Components
 import app.components.cropping_component as crop_com
 import app.components.recognition_component as rec_com
+import app.components.repositories.db_repository_mysql as db_rep
 
 # Controllers
 import app.controllers.detect_controller as detect_con
@@ -19,6 +22,7 @@ detect_controller = detect_con.DetectController()
 cropping_controller = crop_con.CroppingController()
 cropping_component = crop_com.Cropping()
 recognition_component = rec_com.Recognition()
+db_repository = db_rep.DBRepository()
 
 
 def start_service():
@@ -38,12 +42,24 @@ def start_service():
     )
 
     debug = bool(config['SERVICE']['debug'])
+    temp_dict_of_employees = dict()
 
     try:
+        conn = db_connect(config['DB_CONFIG'])
+
+        db_repository.init(conn, config['DB_CONFIG'], debug)
         cropping_component.init(config['CROPPING_COMPONENT'], debug)
         recognition_component.init(config['RECOGNITION_COMPONENT'], debug)
-        detect_controller.init(config)
-        cropping_controller.init(config)
+
+        detect_controller.init(
+            config,
+            temp_dict_of_employees,
+            cropping_component,
+            recognition_component,
+            db_repository
+        )
+
+        cropping_controller.init(config, cropping_component)
         if not bool(config['SERVICE']['ip_cam']):
             listener(config)
         else:
@@ -53,6 +69,21 @@ def start_service():
         logging.error(e)
         print(e)
         exit(1)
+
+
+def db_connect(config):
+    conn = pymysql.connect(host=config['host'],
+                           bind_address=config['bind_address'],
+                           user=config['user'],
+                           password=config['password'],
+                           db=config['dbname'],
+                           charset=config['charset'],
+                           cursorclass=pymysql.cursors.DictCursor)
+
+    conn.ping(reconnect=True)
+    conn.select_db(config['dbname'])
+
+    return conn
 
 
 def translate(messages=None, translator=None):
@@ -85,11 +116,11 @@ def listener(config):
         result = {}
 
         if incoming_data == 1:  # Получение файла
-            employee_id, messages = detect_controller.raw_direct(request, cropping_component, recognition_component)
+            employee_id, messages = detect_controller.raw_direct(request)
         elif incoming_data == 2:  # Получение numpy.ndarray массива
-            employee_id, messages = detect_controller.direct(request, cropping_component, recognition_component)
+            employee_id, messages = detect_controller.direct(request)
         elif incoming_data == 3:  # Получение Base64 строки
-            employee_id, messages = detect_controller.direct_base64(request, cropping_component, recognition_component)
+            employee_id, messages = detect_controller.direct_base64(request)
         else:
             employee_id = 0
             messages = ['unknown_data_format']
@@ -99,12 +130,11 @@ def listener(config):
 
         return json_response(result)
 
-
     @listener_app.post('/crop')
     def crop():
         result = {}
         if incoming_data == 1:  # Получение файла
-            id, messages = cropping_controller.raw_crop(request, cropping_component)
+            id, messages = cropping_controller.raw_crop(request)
         else:
             id = 0
             messages = ['unknown_data_format']

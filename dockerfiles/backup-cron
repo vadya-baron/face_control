@@ -1,0 +1,1 @@
+0 2 * * * /data/docker/databases/backup-script.sh >> /data/docker/databases/logs/backup-mysql.log

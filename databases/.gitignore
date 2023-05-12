@@ -1,1 +1,9 @@
-*
+/base/*.*
+/base/*
+/base_bacup/*.*
+/base_bacup/*
+!/dumps
+!/dumps/dump.sql
+!conf.d
+!conf.d/common.cnf
+!backup-script.sh

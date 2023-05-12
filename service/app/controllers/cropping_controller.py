@@ -14,9 +14,11 @@ class CroppingController:
     _service: dict
     _crop_size_width: int
     _crop_size_height: int
+    cropping_component: Cropping
 
-    def init(self, params: dict):
+    def init(self, params: dict, cropping_component: Cropping):
         self._service = params['SERVICE']
+        self.cropping_component = cropping_component
 
         if self._service['crop_size_width'] is None:
             self._crop_size_width = 0
@@ -28,11 +30,7 @@ class CroppingController:
         else:
             self._crop_size_height = int(self._service['crop_size_height'])
 
-    def raw_crop(
-            self,
-            request,
-            cropping_component: Cropping
-    ) -> (int, list):
+    def raw_crop(self, request) -> (int, list):
         try:
             data = request.files.get('file', '')
             name = request.form.get('name', '')
@@ -45,7 +43,7 @@ class CroppingController:
                 image = cv2.imdecode(image, cv2.IMREAD_COLOR)
                 #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
-                return self.__crop(name, image, cropping_component)
+                return self.__crop(name, image)
             else:
                 return 0, ['no_data']
         except Exception as e:
@@ -55,11 +53,10 @@ class CroppingController:
     def __crop(
             self,
             name: str,
-            data: np.ndarray,
-            cropping_component: Cropping
+            data: np.ndarray
     ) -> (int, list):
         if len(data) > 0:
-            crop_data, messages = cropping_component.cropping(data)
+            crop_data, messages = self.cropping_component.cropping(data)
             if len(crop_data) == 0:
                 return 0, messages + ['no_data']
 
