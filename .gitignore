@@ -160,3 +160,6 @@ cython_debug/
 .idea/
 /api.http
 /service/dataset/*.*
+
+# Mac service files
+.DS_Store
