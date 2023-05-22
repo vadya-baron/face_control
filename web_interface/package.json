@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "tailwindcss": "^3.3.2"
+  },
+  "scripts": {
+    "admin-tailwind-base": "npx tailwindcss -i ./admin/css/base.css -o ./admin/css/min.base.css --watch --minify",
+    "detector-tailwind-base": "npx tailwindcss -i ./detector/css/base.css -o ./detector/css/min.base.css --watch --minify"
+  },
+  "dependencies": {
+    "tw-elements": "^1.0.0-beta2"
+  }
+}

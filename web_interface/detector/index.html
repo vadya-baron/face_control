@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Service Face Control</title>
+    <base href="" />
+    <link rel="stylesheet" href="css/min.base.css">
+    <link rel="icon" type="image/png" href="images/icon.png"/>
+</head>
+<body class="h-screen">
+<nav class="bg-gray-800">
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div class="relative flex h-16 items-center justify-between">
+            <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
+                <div class="hidden sm:ml-6 sm:block">
+                    <div id="main-menu" class="flex space-x-4">
+                        <div class="icon">
+                            <img src="images/icon-w.png" class="h-3">
+                        </div>
+                        <a href="#">Запустить контроль</a>
+                        <a href="#">Остановить контроль</a>
+                        <a href="#">Сменить камеру</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+<div id="sections-container" class="block h-full h-max relative">
+    <div class="container mx-auto my-4 block relative">
+
+    </div>
+</div>
+
+<div id="toast"
+     class="pointer-events-auto mx-auto mb-4 hidden w-96 max-w-full rounded-lg bg-teal-600 bg-clip-padding text-sm text-white shadow-lg shadow-black/5 data-[te-toast-show]:block data-[te-toast-hide]:hidden"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true"
+     data-te-autohide="false"
+     data-te-toast-init
+>
+    <div class="flex items-center justify-between rounded-t-lg border-b-2 border-white bg-clip-padding px-4 pb-2 pt-2.5 0 bg-teal-60 text-white">
+        <p class="flex items-center font-bold text-white">
+            <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    data-prefix="fas"
+                    data-icon="info-circle"
+                    class="mr-2 h-4 w-4 fill-current"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 512 512">
+                <path
+                        fill="currentColor"
+                        d="M256 8C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm0 110c23.196 0 42 18.804 42 42s-18.804 42-42 42-42-18.804-42-42 18.804-42 42-42zm56 254c0 6.627-5.373 12-12 12h-88c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h12v-64h-12c-6.627 0-12-5.373-12-12v-24c0-6.627 5.373-12 12-12h64c6.627 0 12 5.373 12 12v100h12c6.627 0 12 5.373 12 12v24z"></path>
+            </svg>
+            <span id="toast-title" class="text-white"></span>
+        </p>
+        <div class="flex items-center">
+            <button
+                    id="toast-close"
+                    type="button"
+                    class="ml-2 box-content rounded-none border-none opacity-80 hover:no-underline hover:opacity-75 focus:opacity-100 focus:shadow-none focus:outline-none"
+                    data-te-toast-dismiss
+                    aria-label="Close">
+        <span
+                class="w-[1em] focus:opacity-100 disabled:pointer-events-none disabled:select-none disabled:opacity-25 [&.disabled]:pointer-events-none [&.disabled]:select-none [&.disabled]:opacity-25">
+          <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="h-6 w-6">
+            <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </span>
+            </button>
+        </div>
+    </div>
+    <div id="toast-body" class="break-words rounded-b-lg bg-teal-500 px-4 py-4 text-white"></div>
+</div>
+
+<div class="hidden bg-red-600 bg-red-500 w-2/4 w-1/2 w-1/3 w-2/3 w-1/4 w-2/4 w-3/4 w-1/5 w-2/5 text-left text-center
+text-right text-justify divide-y divide-gray-100 flex justify-between gap-x-6 py-5 flex gap-x-4 flex justify-between
+gap-x-6 py-5 h-12 w-12 flex-none rounded-full bg-gray-50 mt-1 flex items-center gap-x-1.5 flex-none rounded-full
+bg-emerald-500/20 p-1 h-1.5 w-1.5 rounded-full bg-emerald-500 text-xs leading-5 text-gray-500 min-w-0 flex-auto
+mt-1 truncate text-xs leading-5 bg-red-500/20 w-28 w-40 min-w-40 min-w-full w-full border-b-2 border-gray-50
+bg-neutral-100 mt-4"
+></div>
+
+<script src="js/config.js"></script>
+<script src="js/tw.js"></script>
+<script src="js/diff-cam-engine.js"></script>
+<script src="js/cam.js"></script>
+</body>
+</html>
