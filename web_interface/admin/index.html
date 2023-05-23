@@ -5,18 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Service Face Control</title>
     <base href="" />
-    <link rel="stylesheet" href="css/min.base.css">
-    <link rel="icon" type="image/png" href="images/icon.png"/>
+    <link rel="stylesheet" href="src/css/fontawesome.css">
+    <link rel="stylesheet" href="src/css/all.css">
+    <link rel="stylesheet" href="src/css/min.base.css">
+    <link rel="icon" type="image/png" href="src/images/icon.png"/>
 </head>
 <body class="h-screen">
 <nav class="bg-gray-800">
     <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
         <div class="relative flex h-16 items-center justify-between">
             <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
-                <div class="hidden sm:ml-6 sm:block">
+                <div class="block">
                     <div id="main-menu" class="flex space-x-4">
-                        <div class="icon">
-                            <img src="images/icon-w.png" class="h-3">
+                        <div class="icon hidden sm:block">
+                            <img src="src/images/icon-w.png" class="h-3">
                         </div>
                         <a
                             href="#"
@@ -25,7 +27,8 @@
                             data-handler="dashboardHandler"
                             class="active"
                         >
-                            Рабочий стол
+                            <span class="hidden sm:block">Рабочий стол</span>
+                            <i class="fa-solid fa-desktop text-center text-gray-500 text-3xl sm:hidden"></i>
                         </a>
                         <a
                             href="#"
@@ -33,7 +36,8 @@
                             data-handler="statisticHandler"
                             data-section-menu="true"
                         >
-                            Статистика
+                            <span class="hidden sm:block">Статистика</span>
+                            <i class="fa-solid fa-chart-pie text-center text-gray-500 text-3xl sm:hidden"></i>
                         </a>
                         <a
                             href="#"
@@ -42,7 +46,8 @@
                             data-handler="employeesHandler"
                             data-section-menu="true"
                         >
-                            Сотрудники
+                            <span class="hidden sm:block">Сотрудники</span>
+                            <i class="fa-solid fa-users text-center text-gray-500 text-3xl sm:hidden"></i>
                         </a>
                     </div>
                 </div>
@@ -324,12 +329,12 @@ text-right text-justify divide-y divide-gray-100 flex justify-between gap-x-6 py
 gap-x-6 py-5 h-12 w-12 flex-none rounded-full bg-gray-50 mt-1 flex items-center gap-x-1.5 flex-none rounded-full
 bg-emerald-500/20 p-1 h-1.5 w-1.5 rounded-full bg-emerald-500 text-xs leading-5 text-gray-500 min-w-0 flex-auto
 mt-1 truncate text-xs leading-5 bg-red-500/20 w-28 w-40 min-w-40 min-w-full w-full border-b-2 border-gray-50
-bg-neutral-100 mt-4"
+bg-neutral-100 mt-4 bg-yellow-500 bg-yellow-600"
 ></div>
 
-<script src="js/tw.js"></script>
-<script src="js/components.js"></script>
-<script src="js/config.js"></script>
-<script src="js/common.js"></script>
+<script src="src/js/tw.js"></script>
+<script src="src/js/components.js"></script>
+<script src="src/js/config.js"></script>
+<script src="src/js/common.js"></script>
 </body>
 </html>
