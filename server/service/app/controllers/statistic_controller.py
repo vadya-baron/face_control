@@ -200,7 +200,7 @@ class StatisticController:
 
             return employees, messages
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return [], [str(e)]
 
     def get_statistic(self, request, response_format: str) -> (list[dict], list):

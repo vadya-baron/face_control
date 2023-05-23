@@ -51,6 +51,7 @@ def record_employee(
         db_repository.add_visit(employee_id, direction)
         temp_dict_of_employees[employee_id]['last_time_rec'] = test_time + min_time_between_rec
     except Exception as e:
+        logging.exception(e)
         return [str(e)]
 
     return []

@@ -60,5 +60,5 @@ class RecognitionController:
 
             return employee_id, messages
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return 0, [str(e)]

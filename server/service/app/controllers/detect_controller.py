@@ -79,7 +79,7 @@ class DetectController:
             else:
                 return 0, ['no_data']
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return 0, [str(e)]
 
     def direct(self, request) -> (int, list):
@@ -106,7 +106,7 @@ class DetectController:
 
             return employee_id, messages
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return 0, [str(e)]
 
     def direct_base64(self, request) -> (int, list):
@@ -136,5 +136,5 @@ class DetectController:
 
             return employee_id, messages
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return 0, [str(e)]

@@ -123,12 +123,15 @@ class DBRepository(Interface):
         cur = self.conn.cursor()
         try:
             cur.execute(
-                "SELECT * FROM `employee_visits` WHERE employee_id=%s " + query + " ORDER BY `visit_date` DESC",
+                "SELECT * FROM `employee_visits` WHERE employee_id = %s " + query + " ORDER BY `visit_date` DESC",
                 employee_id
             )
 
-            result = dict(cur.fetchone())
+            result = cur.fetchone()
             cur.close()
+            if not (dict == type(result)):
+                return {}
+
             if result.get('id') is None:
                 return {}
 
