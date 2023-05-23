@@ -71,3 +71,13 @@
     width: auto;
     padding:5px 10px;
 }
+
+.employee-buttons {
+    width: 280px;
+    display: flex;
+    justify-content: space-between;
+}
+.employee-buttons button {
+    font-size: 12px;
+    height: 40px;
+}
