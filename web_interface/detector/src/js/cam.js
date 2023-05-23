@@ -224,7 +224,7 @@ function toast(title, body, action) {
         toastTitle.innerHTML = '';
         toastBody.innerHTML = '';
     };
-    let timerId = setTimeout(function () {
+    setTimeout(function () {
         toast.removeAttribute('data-te-toast-show');
         toastTitle.innerHTML = '';
         toastBody.innerHTML = '';

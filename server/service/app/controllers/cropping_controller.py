@@ -47,7 +47,7 @@ class CroppingController:
             else:
                 return 0, ['no_data']
         except Exception as e:
-            logging.error(e)
+            logging.exception(e)
             return 0, [str(e)]
 
     def __crop(

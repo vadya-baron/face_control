@@ -2,10 +2,11 @@ import yaml
 import logging
 from flask import Flask, jsonify, make_response, request
 from flask_cors import CORS
-from waitress import serve
+from werkzeug.serving import make_server
 import pymysql
 import pymysql.cursors
 from threading import Thread
+import os
 
 # import Components
 import app.components.cropping_component as crop_com
@@ -37,6 +38,34 @@ recognition_component = rec_com.Recognition()
 
 # __init__ Repositories
 db_repository = db_rep.DBRepository()
+
+
+class ServerThread(Thread):
+
+    def __init__(self, host, port, app):
+        Thread.__init__(self)
+        self.server = make_server(host, port, app)
+        self.ctx = app.app_context()
+        self.ctx.push()
+
+    def run(self):
+        logging.info('starting server')
+        self.server.serve_forever()
+
+    def shutdown(self):
+        self.server.shutdown()
+
+
+def start_server(host, port):
+    global server
+    server = ServerThread(host, port, listener_app)
+    server.start()
+    logging.info('server started')
+
+
+def stop_server():
+    global server
+    server.shutdown()
 
 
 def start_service():
@@ -278,18 +307,13 @@ def listener(config):
     def update_employee_data():
         result = {}
 
-        def work():
-            conn = db_connect(config['DB_CONFIG'])
-            db_repository.init(conn, config['DB_CONFIG'], bool(config['SERVICE']['debug']))
-
-            recognition_component.init(
-                config['RECOGNITION_COMPONENT'],
-                db_repository,
-                bool(config['SERVICE']['debug'])
-            )
+        def work(query):
+            os.system(query)
+            stop_server()
 
         try:
-            thread = Thread(target=work)
+            query = 'bash ' + realpath + '/restart.sh'
+            thread = Thread(target=work, kwargs={'query': query})
             thread.start()
         except Exception as e:
             logging.error('ERROR: update_employee_data thread')
@@ -321,7 +345,11 @@ def listener(config):
 
     print('http://' + str(service['host']) + ':' + str(service['port']))
 
-    serve(listener_app, host=service['host'], port=int(service['port']))
+
+    # server = create_server(listener_app, host=service['host'], port=int(service['port']))
+    # server.run()
+    #listener_app.run(debug=False)
+    start_server(host=service['host'], port=int(service['port']))
 
 
 def json_response(data, code=200):
@@ -338,5 +366,5 @@ if __name__ == '__main__':
     """
     Исполняемый файл сервиса.
     """
-
+    realpath = os.path.dirname(os.path.realpath(__file__))
     start_service()
