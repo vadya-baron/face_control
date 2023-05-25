@@ -171,20 +171,24 @@ class DBRepository(Interface):
 
         return employees
 
-    def get_start_end_working(self, for_date: str = None) -> (list[dict], list[dict]):
+    def get_start_end_working(self, for_date: str = None, employee_id: str = None) -> (list[dict], list[dict]):
         if for_date is None:
             for_date = '{date:%Y-%m-%d}'.format(date=datetime.datetime.now())
+
+        common_where = ''
+        if employee_id is not None:
+            common_where = ' AND employee_id = ' + employee_id
 
         date_where = 'WHERE visit_date >= \'' + for_date + ' 00:00:00\' AND visit_date <= \'' + for_date + ' 23:59:59\''
 
         query_start = 'SELECT DISTINCT FIRST_VALUE(`id`) OVER `win` AS `id`, FIRST_VALUE(`direction`) OVER `win` AS ' \
                       '`direction`, FIRST_VALUE(`visit_date`) OVER `win` AS `visit_date`, `employee_id` FROM ' \
-                      '`employee_visits` ' + date_where + ' AND direction = 0  ' \
+                      '`employee_visits` ' + date_where + ' AND direction = 0  ' + common_where + \
                       'WINDOW `win` AS (PARTITION BY `employee_id` ORDER BY `visit_date` ASC);'
 
         query_end = 'SELECT DISTINCT FIRST_VALUE(`id`) OVER `win` AS `id`, FIRST_VALUE(`direction`) OVER `win` AS ' \
                     '`direction`, FIRST_VALUE(`visit_date`) OVER `win` AS `visit_date`, `employee_id` FROM ' \
-                    '`employee_visits` ' + date_where + '  AND direction = 1 ' \
+                    '`employee_visits` ' + date_where + '  AND direction = 1 ' + common_where + \
                     'WINDOW `win` AS (PARTITION BY `employee_id` ORDER BY `visit_date` DESC);'
 
         list_start = []

@@ -10,6 +10,6 @@ module.exports = {
       }),
     extend: {},
   },
-  plugins: [],
+  plugins: [require("tw-elements/dist/plugin.cjs")],
 }
 

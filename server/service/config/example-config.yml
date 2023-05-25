@@ -12,6 +12,7 @@ SERVICE:
   crop_size_height: # Если пусто, будет найдено пропорциональное значение.
   min_time_between_rec: 60 # Минимальное время между записью сотрудника. По умолчанию 60 сек. Ед. изм. в секундах
   person_display_path: ./static_files/persons
+  export_path: ./static_files/export/
 CROPPING_COMPONENT:
   filling: 40
   cascade: ./config/cv2/lbpcascades/lbpcascade_frontalface.xml
@@ -55,3 +56,6 @@ LANGUAGE:
   i_can_block_an_employee: Не могу заблокировать сотрудника
   employee_is_blocked: Сотрудник заблокирован
   task_has_been_put_to_work: Задача поставлена в работу
+  file_format_is_not_supported: Формат файла не поддерживается
+  can_generate_statistics: Не могу сформировать статистику
+  contact_the_technical_department: Обратитесь в технический отдел

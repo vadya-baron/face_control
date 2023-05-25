@@ -8,3 +8,5 @@ waitress==2.1.2
 face_recognition
 pymysql==1.0.3
 cryptography
+pandas
+openpyxl

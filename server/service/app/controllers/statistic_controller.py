@@ -1,5 +1,7 @@
 import logging
 import datetime
+import app.components.helpers.data_converter as converter
+
 from app.components.repositories.db_repository_mysql import DBRepository
 from app.controllers.common_controller import date_validate, escape
 
@@ -203,7 +205,7 @@ class StatisticController:
             logging.exception(e)
             return [], [str(e)]
 
-    def get_statistic(self, request, response_format: str) -> (list[dict], list):
+    def get_statistic(self, request) -> (list[dict], list):
         filters, messages = _get_statistic_filter(request)
 
         employees = self.db_repository.get_employees(filters)
@@ -225,7 +227,7 @@ class StatisticController:
 
         return employees_visits, messages
 
-    def get_start_end_working_statistic(self, request, response_format: str) -> (dict, list):
+    def get_start_end_working_statistic(self, request) -> (dict, list):
         messages = []
         dataset = {}
         employees = self.db_repository.get_employees()
@@ -276,3 +278,155 @@ class StatisticController:
                     continue
 
         return dataset, messages
+
+    def get_statistic_file(self, request, in_format: str) -> (str, str, list):
+        mimetypes = {
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'csv': 'text/csv',
+            'html': 'text/html'
+        }
+        in_format = in_format.lower()
+        if in_format not in ['xlsx', 'csv', 'html']:
+            logging.error('Формат файла не поддерживается: ' + in_format)
+            return '', '', ['file_format_is_not_supported']
+
+        employees = self.db_repository.get_employees()
+        if len(employees) == 0:
+            return '', mimetypes[in_format], ['employees_notfound']
+
+        for_date = request.args.get('for_date')
+        if for_date is not None:
+            if date_validate(for_date):
+                for_date = datetime.date.fromisoformat(for_date)
+            else:
+                logging.error('Не верный формат даты (for_date): ' + for_date)
+                return '', mimetypes[in_format], ['invalid_date_format']
+
+        date_from = request.args.get('date_from')
+        if date_from is not None:
+            if date_validate(date_from):
+                date_from = datetime.date.fromisoformat(date_from)
+            else:
+                logging.error('Не верный формат даты (date_from): ' + date_from)
+                return '', mimetypes[in_format], ['invalid_date_format']
+        else:
+            date_from = datetime.date.fromisoformat(datetime.date.today().strftime('%Y-%m-%d'))
+
+        date_to = request.args.get('date_to')
+        if date_to is not None:
+            if date_validate(date_to):
+                date_to = datetime.date.fromisoformat(date_to)
+            else:
+                logging.error('Не верный формат даты (date_to): ' + date_to)
+                return '', mimetypes[in_format], ['invalid_date_format']
+        else:
+            date_to = datetime.date.fromisoformat(datetime.date.today().strftime('%Y-%m-%d'))
+
+        delta = date_to - date_from
+        delta_days = delta.days
+
+        employee_id = request.args.get('employee_id')
+
+        if for_date or delta_days == 0:
+            if for_date is None:
+                for_date = datetime.datetime.now()
+
+            list_start, list_end = self.db_repository.get_start_end_working(
+                '{date:%Y-%m-%d}'.format(date=for_date),
+                employee_id
+            )
+            if len(list_start) == 0:
+                return '', mimetypes[in_format], ['no_statistics_available']
+
+            return self._get_file_after_conversion(
+                {
+                    'employees': employees,
+                    'list_stat': [
+                        {
+                            'list_start': list_start,
+                            'list_end': list_end
+                        }
+                    ]
+                }, mimetypes[in_format], in_format
+            )
+
+        list_stat = []
+        for i in range(delta_days):
+            date_from += datetime.timedelta(days=i)
+            list_start, list_end = self.db_repository.get_start_end_working(
+                '{date:%Y-%m-%d}'.format(date=date_from),
+                employee_id
+            )
+            if len(list_start) == 0:
+                continue
+
+            list_stat.append({'list_start': list_start, 'list_end': list_end})
+
+        return self._get_file_after_conversion(
+            {
+                'employees': employees,
+                'list_stat': list_stat
+            }, mimetypes[in_format], in_format
+        )
+
+    def _get_file_after_conversion(self, data: dict, mimetype: str, in_format: str) -> (str, list):
+        format_data = []
+        list_stat = data.get('list_stat', [])
+
+        employees_dict = {}
+        dataset = {}
+
+        for employee in data.get('employees', []):
+            employees_dict[employee['id']] = employee
+
+        if len(list_stat) == 0:
+            return '', mimetype, ['no_statistics_available']
+
+        for stat in list_stat:
+            list_start = stat.get('list_start', [])
+            list_end = stat.get('list_end', [])
+
+            date_start = '{date:%Y-%m-%d}'.format(
+                date=list_start[0].get('visit_date')
+            )
+
+            for start in list_start:
+                employee = employees_dict.get(start['employee_id'])
+                if employee is None:
+                    continue
+                else:
+                    dataset[date_start] = {
+                        'date': date_start,
+                        'display_name': employee['display_name'],
+                        'start_time': '{date:%H:%M}'.format(date=start['visit_date']),
+                        'end_time': '--:--'
+                    }
+
+            if len(list_end) > 0:
+                date_end = '{date:%Y-%m-%d}'.format(
+                    date=list_end[0].get('visit_date')
+                )
+                for end in list_end:
+                    if dataset.get(date_end) is None:
+                        continue
+                    else:
+                        dataset[date_end]['end_time'] = '{date:%H:%M}'.format(date=end['visit_date'])
+
+            format_data.append(dataset.get(date_start))
+
+        if len(format_data) == 0:
+            return '', mimetype, ['no_statistics_available']
+
+        try:
+            file = converter.convert(
+                data=format_data,
+                file_path=self._service['export_path'],
+                in_format=in_format,
+                index='Дата',
+                header_list=['Дата', 'ФИО', 'Пришел', 'Ушел']
+            )
+        except Exception as e:
+            logging.exception(e)
+            return '', mimetype, ['can_generate_statistics', 'contact_the_technical_department']
+
+        return file, mimetype, []

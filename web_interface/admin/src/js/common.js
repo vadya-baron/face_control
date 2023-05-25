@@ -145,6 +145,55 @@ function buttonsHandler(url, containerId, handler, updateService) {
     }
 }
 
+function filtersHandler(url, containerId, handler, filterContainerId) {
+    if (!url || url === '' || !containerId || containerId === '' || !handler || handler === '' || !filterContainerId) {
+        if (CONFIG.debugging) {
+            errorHandler('Не переданы обязательные параметры', containerId, handler, '', '', [
+                'url: ' + url, 'containerId: ' + containerId, 'handler: ' + handler + 'filterContainerId: ' +
+                filterContainerId
+            ]);
+        } else {
+            errorHandler(null, containerId, handler, null, null);
+        }
+        return
+    }
+
+    let inputs = document.querySelectorAll('#' + filterContainerId + ' input, select'),
+        filter = {},
+        in_format = '';
+
+    if (inputs.length > 0) {
+        [].forEach.call(inputs, function(el) {
+            if (el.name && el.value) {
+                filter[el.name] = el.value
+            }
+        });
+    }
+    if (filter['in_format']) {
+        in_format = filter['in_format'];
+        delete filter['in_format'];
+    }
+    debug()
+    debug(in_format)
+
+    CONFIG.loader.classList.remove('hidden');
+
+    if (in_format) {
+        CONFIG.loader.classList.add('hidden');
+        window.location = CONFIG.apiUrl + url + '/' + in_format + '?' + new URLSearchParams(filter).toString()
+    } else {
+        pushData(
+            CONFIG.apiUrl + url + '?' + new URLSearchParams(filter).toString(),
+            null,
+            'get'
+        ).then(
+            response => builderSuccessData(response, containerId, handler),
+            error => errorHandler(error, containerId)
+        );
+    }
+
+}
+
 function dashboardHandler(data, containerId) {
     return new Promise(function(resolve, reject) {
         if (!data || data.list === undefined) {
@@ -396,61 +445,33 @@ function employeesHandler(data, containerId) {
                 let buttonBlock = '';
                 let buttonMoveTrash = '';
                 if (employee.status === 2) {
-                    buttonBlock = '<button type="submit" class="inline-block rounded bg-primary px-2 pb-0 pt-0 ' +
-                        'uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ' +
-                        'ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:outline-none focus:ring-0 active:bg-primary-700 ' +
-                        'active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] ' +
-                        'dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"' +
+                    buttonBlock = '<button type="submit" class="inline-flex items-center gap-x-1 text-sm font-semibold ' +
+                        'leading-6 text-gray-900 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 ' +
+                        'py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:ml-3 sm:w-auto"' +
                         ' onclick="buttonsHandler(\'employees/blocked-employee?id=' + employee.id + '\', \'' + containerId +
                         '\', \'employeesHandler\', true)">' +
                         'Разблокировать' +
                         '   </button>';
                 } else if (employee.status === 3) {
-                    buttonBlock = '<button type="submit" class="inline-block rounded bg-primary px-2 pb-0 pt-0 ' +
-                        'uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ' +
-                        'ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:outline-none focus:ring-0 active:bg-primary-700 ' +
-                        'active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] ' +
-                        'dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"' +
+                    buttonBlock = '<button type="submit" class="inline-flex items-center gap-x-1 text-sm font-semibold ' +
+                        'leading-6 text-gray-900 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 ' +
+                        'py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:ml-3 sm:w-auto"' +
                         ' onclick="buttonsHandler(\'employees/blocked-employee?id=' + employee.id + '\', \'' + containerId +
                         '\', \'employeesHandler\', true)">' +
                         '   Восстановить' +
                         '   </button>';
                 } else {
-                    buttonBlock = '<button type="submit" class="inline-block rounded bg-primary px-2 pb-0 pt-0 ' +
-                    'uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ' +
-                    'ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'focus:outline-none focus:ring-0 active:bg-primary-700 ' +
-                    'active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] ' +
-                    'dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                    'dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                    'dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"' +
+                    buttonBlock = '<button type="submit" class="inline-flex items-center gap-x-1 text-sm font-semibold ' +
+                        'leading-6 text-gray-900 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 ' +
+                        'py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:ml-3 sm:w-auto"' +
                     ' onclick="buttonsHandler(\'employees/blocked-employee?id=' + employee.id + '\', \'' + containerId +
                     '\', \'employeesHandler\', true)">' +
                     '   Блокировать' +
                     '   </button>';
 
-                    buttonMoveTrash = '<button type="submit" class="inline-block rounded bg-primary px-2 pb-0 pt-0 ' +
-                        'uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ' +
-                        'ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'focus:outline-none focus:ring-0 active:bg-primary-700 ' +
-                        'active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                        'dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] ' +
-                        'dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                        'dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"' +
+                    buttonMoveTrash = '<button type="submit" class="inline-flex items-center gap-x-1 text-sm font-semibold ' +
+                        'leading-6 text-gray-900 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 ' +
+                        'py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:ml-3 sm:w-auto"' +
                         ' onclick="buttonsHandler(\'employees/move-trash-employee?id=' + employee.id + '\', \'' + containerId +
                         '\', \'employeesHandler\', true)">' +
                         'В корзину' +
@@ -468,16 +489,9 @@ function employeesHandler(data, containerId) {
                     '   </div>' +
                     '</div>' +
                     '<div class="employee-buttons sm:flex sm:flex-row min-w-40">' + buttonBlock + buttonMoveTrash +
-                    '   <button type="submit" class="inline-block rounded bg-primary px-2 pb-0 pt-0 ' +
-                    'uppercase leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ' +
-                    'ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'focus:outline-none focus:ring-0 active:bg-primary-700 ' +
-                    'active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] ' +
-                    'dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] ' +
-                    'dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                    'dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] ' +
-                    'dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"' +
+                    '   <button type="submit" class="inline-flex items-center gap-x-1 text-sm font-semibold ' +
+                    'leading-6 text-gray-900 inline-flex w-full justify-center rounded-md bg-gray-800 px-3 ' +
+                    'py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-600 sm:ml-3 sm:w-auto"' +
                     ' onclick="buttonsHandler(\'employees/remove-employee?id=' + employee.id + '\', \'' + containerId +
                     '\', \'employeesHandler\', true)">' +
                     '   Удалить' +

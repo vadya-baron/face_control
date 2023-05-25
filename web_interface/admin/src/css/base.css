@@ -73,11 +73,12 @@
 }
 
 .employee-buttons {
-    width: 280px;
+    width: 300px;
     display: flex;
     justify-content: space-between;
 }
-.employee-buttons button {
+.employee-buttons button, .btn {
     font-size: 12px;
     height: 40px;
+    min-width: 95px;
 }
