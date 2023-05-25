@@ -99,3 +99,53 @@ function getCurrentDateString() {
 
     return currentDate.getFullYear()+'-'+mouths[currentDate.getMonth()]+'-'+dates[currentDate.getDate()];
 }
+
+
+// const myDatepicker = new Datepicker(
+//     document.querySelector('#' + id),
+//     {
+//         title: 'Дата',
+//         monthsFull: [
+//             'Январь',
+//             'Февраль',
+//             'Март',
+//             'Апрель',
+//             'Май',
+//             'Июнь',
+//             'Июль',
+//             'Август',
+//             'Сентябрь',
+//             'Октябрь',
+//             'Ноябрь',
+//             'Декабрь',
+//         ],
+//         monthsShort: [
+//             'Янв',
+//             'Фев',
+//             'Март',
+//             'Апр',
+//             'Май',
+//             'Июнь',
+//             'Июль',
+//             'Авг',
+//             'Сен',
+//             'Окт',
+//             'Ноя',
+//             'Дек',
+//         ],
+//         weekdaysFull: [
+//             'Воскресенье',
+//             'Понедельник',
+//             'Вторник',
+//             'Среда',
+//             'Четверг',
+//             'Пятница',
+//             'Суббота',
+//         ],
+//         weekdaysShort: ['Вос', 'Пон', 'Втор', 'Ср', 'Чет', 'Пят', 'Суб'],
+//         weekdaysNarrow: ['В', 'П', 'В', 'С', 'Ч', 'П', 'С'],
+//         okBtnText: 'Применить',
+//         clearBtnText: 'Очистить',
+//         cancelBtnText: 'Закрыть',
+//     }
+// );

@@ -1,6 +1,6 @@
 import yaml
 import logging
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, send_file
 from flask_cors import CORS
 from werkzeug.serving import make_server
 import pymysql
@@ -215,7 +215,7 @@ def listener(config):
 
         response_format = request.args.get('response_format', 'json')
 
-        employees, messages = statistic_controller.get_start_end_working_statistic(request, response_format)
+        employees, messages = statistic_controller.get_start_end_working_statistic(request)
 
         if response_format != 'json':
             messages.append('response_format_is_not_supported')
@@ -239,17 +239,35 @@ def listener(config):
     def statistic():
         result = {}
 
-        response_format = request.args.get('response_format', 'json')
-
-        employees, messages = statistic_controller.get_statistic(request, response_format)
-
-        if response_format != 'json':
-            messages.append('response_format_is_not_supported')
+        employees, messages = statistic_controller.get_statistic(request)
 
         result['messages'] = translate(messages, config['LANGUAGE'])
         result['list'] = employees
 
         return json_response(result)
+
+    @listener_app.get('/statistic/<in_format>')
+    def statistic_file(in_format):
+        result = {}
+        if in_format == '':
+            result['messages'] = translate(
+                ['file_format_is_not_supported', 'contact_the_technical_department'], config['LANGUAGE']
+            )
+            return json_response(result)
+
+        file_path, mimetype, messages = statistic_controller.get_statistic_file(request, in_format)
+
+        if file_path == '':
+            result['messages'] = translate(messages, config['LANGUAGE'])
+            return json_response(result)
+
+        file = file_path.split('/')
+
+        response = make_response(send_file(file_path, mimetype=mimetype))
+        response.headers['Content-Transfer-Encoding'] = 'binary'
+        response.headers['Content-Disposition'] = 'attachment; filename="' + file[-1] + '"'
+        response.headers['Content-Length'] = str(os.path.getsize(file_path))
+        return response
 
     # --------------- employees ---------------
     @listener_app.post('/employees/add-employee')
@@ -323,23 +341,23 @@ def listener(config):
 
         return json_response(result)
 
+    @listener_app.errorhandler(400)
+    def bad_request(error):
+        logging.error(error)
+        return json_response({'error': 'Bad request'}, 400)
+
+    @listener_app.errorhandler(403)
+    def access_denied(error):
+        logging.error(error)
+        return json_response({'error': 'Access_denied'}, 403)
+
     @listener_app.errorhandler(404)
     def not_found(error):
         logging.error(error)
         return json_response({'error': 'Not found'}, 404)
 
-    @listener_app.errorhandler(400)
-    def not_found(error):
-        logging.error(error)
-        return json_response({'error': 'Bad request'}, 404)
-
     @listener_app.errorhandler(405)
-    def not_found(error):
-        logging.error(error)
-        return json_response({'error': 'Method Not Allowed'}, 405)
-
-    @listener_app.errorhandler(405)
-    def not_found(error):
+    def method_not_allowed(error):
         logging.error(error)
         return json_response({'error': 'Method Not Allowed'}, 405)
 
