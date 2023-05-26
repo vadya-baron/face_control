@@ -31,11 +31,31 @@ function firstLoadContent() {
         url = activeMenu.getAttribute('data-url'),
         handler = activeMenu.getAttribute('data-handler');
 
+    if (id === 'dashboard') {
+        shadowsUpdateData(id, url, handler, CONFIG.shadowsUpdateDataTime);
+    }
+
     loadData(CONFIG.apiUrl + url).then(
         response => builderSuccessData(response, id, handler),
         error => errorHandler(error, id, handler)
     );
 
+
+
+}
+
+function shadowsUpdateData(id, url, handler, interval) {
+    debug('shadowsUpdateData');
+    setTimeout(function () {
+        let resp = loadData(CONFIG.apiUrl + url).then(
+            response => builderSuccessData(response, id, handler),
+            error => errorHandler(error, id, handler)
+        );
+
+        if (resp) {
+            shadowsUpdateData(id, url, handler, interval);
+        }
+    }, interval);
 }
 
 function mainMenuHandler() {
