@@ -160,6 +160,4 @@ cython_debug/
 .idea/
 /api.http
 /service/dataset/*.*
-/web_interface/admin/src/chrome/linux/
-/web_interface/detector/src/chrome/linux/
 /web_interface/bin/

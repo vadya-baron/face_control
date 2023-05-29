@@ -45,16 +45,16 @@ function firstLoadContent() {
 }
 
 function shadowsUpdateData(id, url, handler, interval) {
-    debug('shadowsUpdateData');
+    let sectionHidden = document.getElementById(id).classList.contains('hidden') || false;
     setTimeout(function () {
-        let resp = loadData(CONFIG.apiUrl + url).then(
-            response => builderSuccessData(response, id, handler),
-            error => errorHandler(error, id, handler)
-        );
-
-        if (resp) {
-            shadowsUpdateData(id, url, handler, interval);
+        debug(!sectionHidden);
+        if (!sectionHidden) {
+            loadData(CONFIG.apiUrl + url).then(
+                response => builderSuccessData(response, id, handler, false),
+                error => errorHandler(error, id, handler)
+            );
         }
+        shadowsUpdateData(id, url, handler, interval);
     }, interval);
 }
 
@@ -695,8 +695,11 @@ function updateEmployeeData(containerId, handler) {
     }, 1000);
 }
 
-function builderSuccessData(response, containerId, handler) {
+function builderSuccessData(response, containerId, handler, showContainer) {
     let container = document.querySelector('#' + containerId);
+    if (showContainer !== false) {
+        showContainer = true
+    }
     if (!container) {
         errorHandler(
             'Нет контейнера',
@@ -708,7 +711,10 @@ function builderSuccessData(response, containerId, handler) {
         return;
     }
     if (container.length === 0) {
-        container.classList.remove('hidden');
+        if (showContainer) {
+            container.classList.remove('hidden');
+        }
+
         CONFIG.loader.classList.add('hidden');
         errorHandler(
             'Нет контейнера',
@@ -720,7 +726,9 @@ function builderSuccessData(response, containerId, handler) {
         return;
     }
     if (!response || !handler) {
-        container.classList.remove('hidden');
+        if (showContainer) {
+            container.classList.remove('hidden');
+        }
         CONFIG.loader.classList.add('hidden');
         return;
     }
@@ -746,7 +754,9 @@ function builderSuccessData(response, containerId, handler) {
                                 'success'
                             );
                         }
-                        container.classList.remove('hidden');
+                        if (showContainer) {
+                            container.classList.remove('hidden');
+                        }
                         CONFIG.loader.classList.add('hidden');
                     },
                     error => errorHandler(
@@ -759,7 +769,9 @@ function builderSuccessData(response, containerId, handler) {
                     )
                 );
             } catch (err) {
-                container.classList.remove('hidden');
+                if (showContainer) {
+                    container.classList.remove('hidden');
+                }
                 CONFIG.loader.classList.add('hidden');
                 errorHandler(
                     err,
