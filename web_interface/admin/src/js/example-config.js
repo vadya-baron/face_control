@@ -6,7 +6,8 @@ const CONFIG = {
   'currentDateContainer': document.querySelector('#current-date .date'),
   'hashAlgo': 'SHA-256',
   'apiKeyHash': '',
-  'debugging': true,
-  'toastTime': 7000
+  'debugging': false,
+  'toastTime': 7000,
+  'shadowsUpdateDataTime': 10000
 }
 

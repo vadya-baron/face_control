@@ -36,16 +36,24 @@
 -------
 
 - **Веб интерфейс администрирования:** 
-  - Исполняемый файл ./web_interface/admin/index.html 
-  - Файл конфигурации ./web_interface/admin/js/example-config.js переименовать в ./web_interface/admin/js/config.js 
-  - В файле ./web_interface/admin/js/config.js (Параметр **apiKey** должен совпадать с **secret_key** сервиса)
-
+  - Исполняемый файл ./web_interface/admin/src/index.html 
+  - Файл конфигурации ./web_interface/admin/src/js/example-config.js переименовать в ./web_interface/admin/src/js/config.js 
+  - В файле ./web_interface/admin/src/js/config.js (Параметр **apiKey** должен совпадать с **secret_key** сервиса)
+  - Добавил файл ./web_interface/admin/admin.py, он использует eel для сбора index.html в десктоп приложение
+  - **Если есть необходимость скомпилировать в десктоп приложение:**
+    - Скачиваем хром https://download-chromium.appspot.com/ и ложим его в папку с соответствующей системой, из под которой собираетесь компилировать. Например: ./web_interface/admin/src/chrome
+/linux
+    - Действуем по инструкции ELL
 -------
 
 - **Веб интерфейс детектора:** 
-  - Исполняемый файл ./web_interface/detector/index.html 
-  - Файл конфигурации ./web_interface/detector/js/example-config.js переименовать в ./web_interface/detector/js/config.js 
-  - В файле ./web_interface/detector/js/config.js (Параметр **apiKey** должен совпадать с **secret_key** сервиса)
+  - Исполняемый файл ./web_interface/detector/src/index.html 
+  - Файл конфигурации ./web_interface/detector/src/js/example-config.js переименовать в ./web_interface/detector/src/js/config.js 
+  - В файле ./web_interface/detector/src/js/config.js (Параметр **apiKey** должен совпадать с **secret_key** сервиса)
+  - **Если есть необходимость скомпилировать в десктоп приложение:**
+    - Скачиваем хром https://download-chromium.appspot.com/ и ложим его в папку с соответствующей системой, из под которой собираетесь компилировать. Например: ./web_interface/detector/src/chrome
+/linux
+    - Действуем по инструкции ELL
 
 -------
 

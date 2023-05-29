@@ -11,7 +11,7 @@ SERVICE:
   crop_size_width: 120
   crop_size_height: # Если пусто, будет найдено пропорциональное значение.
   min_time_between_rec: 60 # Минимальное время между записью сотрудника. По умолчанию 60 сек. Ед. изм. в секундах
-  person_display_path: ./static_files/persons
+  person_display_path: ./static_files/images/persons/
   export_path: ./static_files/export/
 CROPPING_COMPONENT:
   filling: 40
@@ -59,3 +59,4 @@ LANGUAGE:
   file_format_is_not_supported: Формат файла не поддерживается
   can_generate_statistics: Не могу сформировать статистику
   contact_the_technical_department: Обратитесь в технический отдел
+  no_statistics_available: Статистические данные отсутствуют
