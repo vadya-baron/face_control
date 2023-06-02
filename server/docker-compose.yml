@@ -19,6 +19,8 @@ services:
       - ./www:/var/www:rw
       - ./service/static_files:/var/static_files:rw
     restart: always
+    environment:
+      TZ: ${DEFAULT_TZ:-Asia/Yekaterinburg}
     depends_on:
       - face_control_adminer
       - face_control_app
@@ -33,6 +35,8 @@ services:
     restart: always
     links:
       - face_control_mysql:db
+    environment:
+      TZ: ${DEFAULT_TZ:-Asia/Yekaterinburg}
     depends_on:
       - face_control_mysql
     volumes:
@@ -71,6 +75,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD:-admin}
       MYSQL_ROOT_PASSWORD: ${DB_ADMIN_PASSWORD:-root}
       MYSQL_ROOT_HOST: '%'
+      TZ: ${DEFAULT_TZ:-Asia/Yekaterinburg}
     networks:
       - app-network
 
@@ -82,6 +87,8 @@ services:
       - 8080:8080
     links:
       - face_control_mysql:db
+    environment:
+      TZ: ${DEFAULT_TZ:-Asia/Yekaterinburg}
     depends_on:
       - face_control_mysql
     networks:

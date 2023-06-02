@@ -242,7 +242,9 @@ function dashboardHandler(data, containerId) {
                     '   </div>' +
                     '</div>';
 
-                if (!employee.time_go_work || employee.time_go_work === undefined) {
+                let timeGoWork = employee.time_go_work || null;
+
+                if (!timeGoWork) {
                     child = child + '' +
                         '<div class="sm:flex sm:flex-col sm:items-end w-40 min-w-40 text-left">' +
                         '   <p class="text-sm leading-6 text-gray-900">Время прихода: ' +
@@ -259,23 +261,29 @@ function dashboardHandler(data, containerId) {
                     children += child;
                     return;
                 }
-                if (employee.time_go_work.came_out_time) {
-                    let came_out_time = new Date(currDateString + ' ' + employee.time_go_work.came_out_time + ':00');
+
+                let cameOutTime = timeGoWork.came_out_time || '--:--',
+                    enteredTime = timeGoWork.entered_time || '--:--';
+
+                if (cameOutTime !== '--:--') {
+                    let came_out_time = new Date(currDateString + ' ' + cameOutTime + ':00');
                     if (currDate > came_out_time) {
                         switcher = 'Отсутствует';
                         switcherColor = 'bg-red-500';
                     }
                 } else {
-                    employee.time_go_work.came_out_time = '--:--'
+                    switcher = 'Присутствует';
+                    switcherColor = 'bg-emerald-500';
+                    cameOutTime = '--:--'
                 }
 
                 child = child + '' +
                     '<div class="sm:flex sm:flex-col sm:items-end w-40 min-w-40 text-left">' +
                     '   <p class="text-sm leading-6 text-gray-900">Время прихода: ' +
-                    '       <span class="time"><strong>' + employee.time_go_work.entered_time + '</strong></span>' +
+                    '       <span class="time"><strong>' + enteredTime + '</strong></span>' +
                     '   </p>' +
                     '   <p class="text-sm leading-6 text-gray-900">Время ухода: ' +
-                    '       <span class="time"><strong>' + employee.time_go_work.came_out_time + '</strong></span>' +
+                    '       <span class="time"><strong>' + cameOutTime + '</strong></span>' +
                     '   </p>' +
                     '   <div class="mt-1 flex items-center gap-x-1.5">' +
                     '       <div class="flex-none rounded-full ' + switcherColor + '/20 p-1">' +
