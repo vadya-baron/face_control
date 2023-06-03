@@ -1,88 +1,52 @@
 import cv2
-import os
 import numpy as np
-
+from typing import Tuple
 from app.components.common.abstract_cropping import Interface
-
-
-def _is_filling(original_image=0, cropped_image=0, filling=0) -> bool:
-    if original_image == 0 or cropped_image == 0 or filling == 0:
-        return False
-
-    test_filling = int((cropped_image / original_image) * 100)
-    return test_filling >= filling
-
 
 class Cropping(Interface):
     """
     Компонент по поиску лица, вырезание области лица и возвращение numpy.ndarray
     """
 
-    _params = None
-    _filling = None
-    _face_cascade = None
-    _debug = False
-    _crop_size_width: int
-    _crop_size_height: int
-
-    def init(self, params: dict, debug: bool):
+    def init(self, params: dict, debug: bool = False):
         self._params = params
         self._debug = debug
-
-        cascade = params['cascade']
         self._filling = self._params['filling']
+        self._crop_margin = self._params['crop_margin']
+        self._crop_size_width = int(self._params['crop_size_width'])
+        self._crop_size_height = int(self._params['crop_size_width'])
+        self._face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + params['cascade'])
 
-        if not os.path.isfile(cascade):
-            raise Exception(f'Файл {cascade} не найден')
+    @staticmethod
+    def _is_filling(original_image: float, cropped_image: float, filling: float) -> bool:
+        test_filling = int((cropped_image / original_image) * 100)
+        return test_filling >= filling
 
-        if self._params['crop_size_width'] is None:
-            self._crop_size_width = 0
-        else:
-            self._crop_size_width = int(self._params['crop_size_width'])
-
-        if self._params['crop_size_height'] is None:
-            self._crop_size_height = 0
-        else:
-            self._crop_size_height = int(self._params['crop_size_height'])
-
-        self._face_cascade = cv2.CascadeClassifier(params['cascade'])
-
-    def cropping(self, image: np.ndarray) -> (list, list):
-        faces = self._face_cascade.detectMultiScale(image)
-        cropped = []
+    def cropping(self, image: np.ndarray) -> Tuple[np.ndarray, list]:
+        faces = self._face_cascade.detectMultiScale(image, scaleFactor=1.2, minNeighbors=5)
         messages = []
-        if len(faces) == 0:
-            return [], []
-        elif len(faces) > 1:
+        if len(faces) > 1:
             messages.append('only_one_face')
-        else:
-            for x, y, width, height in faces:
-                if self._filling:
-                    original_image = image.shape[0] * image.shape[1]
-                    cropped_image = (y + height) * (x + width)
-                    if _is_filling(original_image, cropped_image, self._filling):
-                        # bound_rect = iv2.rectangle(frame, (x, y), (x + width, y + height), color=(0, 255, 0), thickness=2)
-                        cropped = image[y:y + height, x:x + width]
-
-                        if self._crop_size_width > 0 and self._crop_size_height > 0:
-                            small = cv2.resize(
-                                cropped,
-                                (self._crop_size_width, self._crop_size_height),
-                                interpolation=cv2.INTER_LINEAR
-                            )
-                        elif self._crop_size_width > 0 and self._crop_size_height == 0:
-                            height = cropped.shape[0]
-                            width = cropped.shape[1]
-                            ratio = self._crop_size_width / width
-                            new_height = int(height * ratio)
-                            small = cv2.resize(
-                                cropped,
-                                (self._crop_size_width, new_height),
-                                interpolation=cv2.INTER_LINEAR
-                            )
-                        else:
-                            small = cv2.resize(cropped, (0, 0), fx=0.5, fy=0.5)
-                    else:
-                        messages.append('come_closer')
-
-        return small, messages
+        elif len(faces) == 1:
+            face = faces[0]
+            x, y, w, h = face
+            original_image = image.shape[0] * image.shape[1]
+            cropped_image = h * w
+            if not self._is_filling(original_image, cropped_image, self._filling):
+                messages.append('come_closer')
+                return np.array([]), messages
+            x_center = x + (w // 2)
+            y_center = y + (h // 2)
+            min_dist_to_center = min(x_center,y_center, image.shape[1]-x_center, image.shape[0]-y_center)
+            desired_radius = w//2 * self._crop_margin
+            if desired_radius > min_dist_to_center:
+                messages.append('too_close')
+                return np.array([]), messages
+            cropped = image[y:y+h, x:x+w]     
+            small = cv2.resize(
+                cropped, 
+                (self._crop_size_width, self._crop_size_height), 
+                interpolation=cv2.INTER_LINEAR
+                )
+            return small, messages
+        return np.array([]), messages

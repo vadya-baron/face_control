@@ -14,8 +14,9 @@ SERVICE:
   person_display_path: ./static_files/images/persons/
   export_path: ./static_files/export/
 CROPPING_COMPONENT:
-  filling: 40
-  cascade: ./config/cv2/lbpcascades/lbpcascade_frontalface.xml
+  filling: 10
+  cascade: haarcascade_frontalface_default.xml #lbpcascade_frontalface.xml # Название каскада. Сам каскад берется из библиотеки cv2
+  crop_margin: 1.3 # Коэффициент запаса для обрезки лица. Нужен во избежание черных полос после обрезки.
   crop_size_width: 120
   crop_size_height: # Если пусто, будет найдено пропорциональное значение.
 RECOGNITION_COMPONENT:
@@ -33,6 +34,7 @@ DB_CONFIG:
 LANGUAGE:
   only_one_face: Идентификация проходит только по очереди
   come_closer: Подойдите ближе
+  too_close: Слишком близко
   no_data: Нет данных
   unknown_data_format: Неизвестный формат данных
   recognition_success: Проходите
